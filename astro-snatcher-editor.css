@@ -1,0 +1,80 @@
+
+
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+}
+
+
+#columns {
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+#column1, #column3 {
+	flex: 2;
+}
+
+#column2 {
+	flex : 1;
+	display: flex;
+	flex-direction: column;
+}
+
+#column2, #column3 {
+	border-left: 2px solid lightgray;
+}
+
+
+#canvas {
+	width: 100%;
+	height: 100%;
+}
+
+
+#tabs {
+	display: flex;
+}
+
+.tab {
+	border-right: 2px solid lightgray;
+	border-bottom: 2px solid lightgray;
+	padding: 0.5em;
+	cursor: default;
+}
+
+.tab.selected {
+	border-bottom: none;
+}
+
+#noTab {
+	flex: 1;
+	border-bottom: 2px solid lightgray;
+}
+
+
+.tabPanel {
+	display: none;
+	flex: 1;
+}
+
+.tabPanel.selected {
+	display: block;
+}
+
+
+#column3 {
+	display: flex;
+	flex-direction: column;
+}
+
+#palettePanel {
+	flex: 1;
+	border-bottom: 2px solid lightgray;
+}
+
+#scriptPanel {
+	flex: 3;
+}
