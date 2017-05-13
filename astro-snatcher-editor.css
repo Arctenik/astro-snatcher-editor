@@ -89,6 +89,11 @@ html, body {
 	font-weight: bold;
 	font-size: 0.8em;
 	width: fit-content;
+	padding-right: 1em; /* not the exact value necessary >.> */
+}
+
+.block.hasHat {
+	padding-top: 0.84em;
 }
 
 .block.dragged {

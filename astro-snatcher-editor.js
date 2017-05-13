@@ -12,7 +12,8 @@ var tabs = document.querySelectorAll(".tab"),
 var currentTab = 0,
 	draggingBlock = false,
 	draggingBlockX,
-	draggingBlockY;
+	draggingBlockY,
+	draggingBlockParent;
 
 
 
@@ -53,9 +54,28 @@ scriptPanel.appendChild(makeBlock([
 
 document.addEventListener("mousemove", e => {
 	if (draggingBlock) {
-		let {left, top} = scriptPanel.getBoundingClientRect();
-		draggingBlock.style.left = (e.pageX - left + draggingBlockX) + "px";
-		draggingBlock.style.top = (e.pageY - top + draggingBlockY) + "px";
+		updatePosition();
+		let {left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect(),
+			{left: blockLeft, top: blockTop} = draggingBlock.getBoundingClientRect();
+		if (blockLeft < panelLeft || blockTop < panelTop) {
+			if (draggingBlockParent === scriptPanel) {
+				draggingBlockParent = document.body;
+				draggingBlockParent.appendChild(draggingBlock);
+				updatePosition();
+			}
+		} else {
+			if (draggingBlockParent !== scriptPanel) {
+				draggingBlockParent = scriptPanel;
+				draggingBlockParent.appendChild(draggingBlock);
+				updatePosition();
+			}
+		}
+	}
+	
+	function updatePosition() {
+		let {left: parentLeft, top: parentTop} = draggingBlockParent.getBoundingClientRect();
+		draggingBlock.style.left = (e.pageX - parentLeft + draggingBlockX) + "px";
+		draggingBlock.style.top = (e.pageY - parentTop + draggingBlockY) + "px";
 	}
 });
 	
@@ -83,6 +103,7 @@ function makeBlock(items, info = {}) {
 		hatElem.appendChild(hatBorder);
 		hatElem.appendChild(hatInner);
 		elem.appendChild(hatElem);
+		elem.classList.add("hasHat");
 	}
 	
 	newPiece();
@@ -125,10 +146,12 @@ function makeBlock(items, info = {}) {
 	}
 	
 	elem.addEventListener("mousedown", e => {
+		draggingBlockParent = elem.parentElement;
 		draggingBlock = elem;
 		draggingBlockX = -e.offsetX;
 		draggingBlockY = -e.offsetY;
 		elem.classList.add("dragged");
+		draggingBlockParent.appendChild(elem); // to get it to the front
 	});
 	
 	return elem;
