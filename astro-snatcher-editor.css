@@ -4,6 +4,7 @@ html, body {
 	margin: 0;
 	padding: 0;
 	font-family: sans-serif;
+	overflow: hidden;
 }
 
 
@@ -71,8 +72,11 @@ html, body {
 }
 
 #palettePanel {
+	position: relative;
 	flex: 1;
 	border-bottom: 2px solid lightgray;
+	background: #fafafa;
+	overflow: auto;
 }
 
 #scriptPanel {
@@ -85,12 +89,16 @@ html, body {
 
 .block {
 	position: absolute;
+	font-size: 0.8em;
 	color: white;
 	font-weight: bold;
-	font-size: 0.8em;
 	width: -moz-max-content;
 	width: max-content;
 	padding-right: 1em; /* not the exact value necessary >.> */
+}
+
+.block .block {
+	font-size: inherit;
 }
 
 .block.hasHat {
@@ -133,7 +141,6 @@ html, body {
 .blockPiece {
 	display: flex;
 	align-items: center;
-	width: 100%;
 	background: #e1a91a;
 	border: 0.16em solid #ba8c16;
 	border-top-right-radius: 0.3em;
@@ -149,6 +156,19 @@ html, body {
 	border-bottom-left-radius: 0.3em;
 }
 
+.reporter .blockPiece {
+	border-top-right-radius: 1em;
+	border-bottom-right-radius: 1em;
+}
+
+.reporter .blockPiece:first-child {
+	border-top-left-radius: 1em;
+}
+
+.reporter .blockPiece:last-child {
+	border-bottom-left-radius: 1em;
+}
+
 .blockPiece > * {
 	margin-left: 0.5em;
 }
@@ -159,7 +179,7 @@ html, body {
 
 .blockC {
 	position: relative;
-	height: 1em;
+	min-height: 1em;
 }
 
 .blockCAbove {
@@ -183,6 +203,7 @@ html, body {
 }
 
 .blockCEdge {
+	position: absolute;
 	width: 0.5em;
 	height: 100%;
 	background: #e1a91a;
@@ -194,11 +215,11 @@ html, body {
 	top: -0.16em;
 	left: 0.5em;
 	width: 1em;
-	height: 1em;
+	height: 100%;
 	border: 0.16em solid #ba8c16;
 	border-right: none;
-	border-top-left-radius: 0.3em;
-	border-bottom-left-radius: 0.3em;
+	border-top-left-radius: 0.46em;
+	border-bottom-left-radius: 0.46em;
 }
 
 .blockLabel {
