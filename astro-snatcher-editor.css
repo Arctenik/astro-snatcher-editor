@@ -76,5 +76,143 @@ html, body {
 }
 
 #scriptPanel {
+	position: relative;
 	flex: 3;
+	background: #eee;
+	overflow: auto;
+}
+
+
+.block {
+	position: absolute;
+	color: white;
+	font-weight: bold;
+	font-size: 0.8em;
+	width: fit-content;
+}
+
+.block.dragged {
+	filter: drop-shadow(0.2em 0.2em 0.1em rgba(0, 0, 0, 0.25));
+}
+
+.blockHat {
+	position: relative;
+	top: 0.16em;
+}
+
+.blockHatBorder {
+	position: absolute;
+	bottom: 0;
+	width: 2em;
+	height: 1em;
+	background: #ba8c16;
+	border-top-left-radius: 1em;
+	border-top-right-radius: 1em;
+	transform: scaleX(3);
+	transform-origin: left;
+}
+
+.blockHatInner {
+	position: absolute;
+	bottom: 0;
+	width: 2em;
+	height: 1em;
+	background: #e1a91a;
+	border-top-left-radius: 1em;
+	border-top-right-radius: 1em;
+	transform: translate(0.16em) scale(2.84, 0.84);
+	transform-origin: left bottom;
+}
+
+.blockPiece {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	background: #e1a91a;
+	border: 0.16em solid #ba8c16;
+	border-top-right-radius: 0.3em;
+	border-bottom-right-radius: 0.3em;
+	padding: 0.25em;
+}
+
+.blockPiece:first-child {
+	border-top-left-radius: 0.3em;
+}
+
+.blockPiece:last-child {
+	border-bottom-left-radius: 0.3em;
+}
+
+.blockPiece > * {
+	margin-left: 0.5em;
+}
+
+.blockPiece > *:first-child {
+	margin-left: 0;
+}
+
+.blockC {
+	position: relative;
+	height: 1em;
+}
+
+.blockCAbove {
+	content: '';
+	width: 1em;
+	height: 0.16em;
+	background: #e1a91a;
+	position: absolute;
+	left: 0.16em;
+	top: -0.16em;
+}
+
+.blockCBelow {
+	content: '';
+	width: 1em;
+	height: 0.16em;
+	background: #e1a91a;
+	position: absolute;
+	left: 0.16em;
+	bottom: -0.16em;
+}
+
+.blockCEdge {
+	width: 0.5em;
+	height: 100%;
+	background: #e1a91a;
+	border-left: 0.16em solid #ba8c16;
+}
+
+.blockCSpace {
+	position: absolute;
+	top: -0.16em;
+	left: 0.5em;
+	width: 1em;
+	height: 1em;
+	border: 0.16em solid #ba8c16;
+	border-right: none;
+	border-top-left-radius: 0.3em;
+	border-bottom-left-radius: 0.3em;
+}
+
+.blockLabel {
+	cursor: default;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.blockText, .blockNumber {
+	background: white;
+	border: 0.16em inset white;
+	color: black;
+	font-weight: normal;
+	min-width: 0.75em;
+	min-height: 1.25em;
+	padding: 0 0.25em;
+}
+
+.blockNumber {
+	border-radius: 1em;
 }
