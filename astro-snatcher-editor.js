@@ -129,6 +129,15 @@ var paletteBlocks = [
 ];
 
 
+var blockElems = [];
+
+function updateBlockZIndices() {
+	blockElems.forEach((elem, i) => {
+		elem.style.zIndex = i;
+	});
+}
+
+
 {
 	let spacing = 1,
 		nextPxX = 0,
@@ -136,7 +145,7 @@ var paletteBlocks = [
 	
 	paletteBlocks.forEach(blockDef => {
 		var block = makeBlock(blockDef, true);
-		block.style.left = `calc(${nextPxX}px + ${nextEmX}em)`;
+		block.style.left = `calc(${Math.round(nextPxX)}px + ${nextEmX}em)`;
 		block.style.top = spacing + "em";
 		palettePanel.appendChild(block);
 		var {width} = block.getBoundingClientRect();
@@ -148,6 +157,7 @@ var paletteBlocks = [
 
 document.addEventListener("mousemove", e => {
 	if (draggingBlock) {
+		e.preventDefault();
 		updatePosition();
 		let {left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect(),
 			{left: blockLeft, top: blockTop} = draggingBlock.getBoundingClientRect();
@@ -177,6 +187,7 @@ document.addEventListener("mouseup", e => {
 	if (draggingBlock) {
 		let {left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect();
 		if (e.clientX < panelLeft || e.clientY < panelTop) {
+			blockElems.splice(blockElems.indexOf(draggingBlock), 1);
 			draggingBlock.remove();
 			draggingBlock = false;
 		} else {
@@ -196,11 +207,16 @@ document.addEventListener("mouseup", e => {
 
 
 function makeBlock(info, inPalette) {
-	var {items, shape} = info,
+	var {items, shape = "stack"} = info,
+		wrapper = document.createElement("div"),
 		elem = document.createElement("div"),
-		currentPiece;
+		firstPiece,
+		currentPiece, currentPieceItems;
 		
+	wrapper.classList.add("blockWrapper");
 	elem.classList.add("block");
+	
+	wrapper.appendChild(elem);
 	
 	if (shape === "hat") {
 		let hatElem = document.createElement("div"),
@@ -218,9 +234,13 @@ function makeBlock(info, inPalette) {
 	}
 	
 	newPiece();
+	firstPiece = currentPiece;
 	
 	items.forEach(item => {
 		if (item.type === "c") {
+			let cTooth = makeTooth();
+			cTooth.classList.add("blockCTooth");
+			currentPiece.appendChild(cTooth);
 			currentPiece = false;
 			let cElem = document.createElement("div"),
 				cAbove = document.createElement("div"),
@@ -245,34 +265,95 @@ function makeBlock(info, inPalette) {
 			let itemElem = makeBlockItem(item);
 			if (itemElem) {
 				if (!currentPiece) newPiece();
-				currentPiece.appendChild(itemElem);
+				currentPieceItems.appendChild(itemElem);
 			}
 		}
 	});
 	
 	function newPiece() {
 		currentPiece = document.createElement("div");
+		currentPieceItems = document.createElement("div");
 		currentPiece.classList.add("blockPiece");
+		currentPieceItems.classList.add("blockPieceItems");
+		currentPiece.appendChild(currentPieceItems);
 		elem.appendChild(currentPiece);
 	}
 	
-	elem.addEventListener("mousedown", e => {
+	
+	currentPiece.appendChild(makeTooth());
+	
+	var toothSlotElem = document.createElement("div"),
+		toothSlotEdgeLeft = document.createElement("div"),
+		toothSlotSlopeLeft = document.createElement("div"),
+		toothSlotSlopeLeftBorder = document.createElement("div"),
+		toothSlotSlopeLeftInner = document.createElement("div"),
+		toothSlotSlopeRight = document.createElement("div"),
+		toothSlotSlopeRightBorder = document.createElement("div"),
+		toothSlotSlopeRightInner = document.createElement("div"),
+		toothSlotEdgeRight = document.createElement("div");
+	
+	toothSlotElem.classList.add("blockToothSlot");
+	toothSlotEdgeLeft.classList.add("blockToothSlotEdgeLeft");
+	toothSlotSlopeLeft.classList.add("blockToothSlotSlopeLeft");
+	toothSlotSlopeLeftBorder.classList.add("blockToothSlotSlopeLeftBorder");
+	toothSlotSlopeLeftInner.classList.add("blockToothSlotSlopeLeftInner");
+	toothSlotSlopeRight.classList.add("blockToothSlotSlopeRight");
+	toothSlotSlopeRightBorder.classList.add("blockToothSlotSlopeRightBorder");
+	toothSlotSlopeRightInner.classList.add("blockToothSlotSlopeRightInner");
+	toothSlotEdgeRight.classList.add("blockToothSlotEdgeRight");
+	
+	toothSlotElem.appendChild(toothSlotEdgeLeft);
+	toothSlotSlopeLeft.appendChild(toothSlotSlopeLeftBorder);
+	toothSlotSlopeLeft.appendChild(toothSlotSlopeLeftInner);
+	toothSlotElem.appendChild(toothSlotSlopeLeft);
+	toothSlotSlopeRight.appendChild(toothSlotSlopeRightBorder);
+	toothSlotSlopeRight.appendChild(toothSlotSlopeRightInner);
+	toothSlotElem.appendChild(toothSlotSlopeRight);
+	toothSlotElem.appendChild(toothSlotEdgeRight);
+	firstPiece.insertBefore(toothSlotElem, firstPiece.children[0]);
+	
+	if (shape !== "reporter") wrapper.classList.add("hasTooth");
+	
+	if (shape === "stack") wrapper.classList.add("hasToothSlot");
+	
+	
+	function makeTooth() {
+		var toothElem = document.createElement("div"),
+			toothBorder = document.createElement("div"),
+			toothInner = document.createElement("div");
+		
+		toothElem.classList.add("blockTooth");
+		toothBorder.classList.add("blockToothBorder");
+		toothInner.classList.add("blockToothInner");
+		
+		toothElem.appendChild(toothBorder);
+		toothElem.appendChild(toothInner);
+		return toothElem;
+	}
+	
+	
+	wrapper.addEventListener("mousedown", e => {
+		e.stopPropagation();
 		var dragElem;
 		if (inPalette) {
 			dragElem = makeBlock(info);
 			draggingBlockParent = document.body;
 		} else {
-			dragElem = elem;
-			draggingBlockParent = elem.parentElement;
+			dragElem = wrapper;
+			draggingBlockParent = wrapper.parentElement;
 		}
 		draggingBlock = dragElem;
 		draggingBlockX = -e.offsetX;
 		draggingBlockY = -e.offsetY;
 		dragElem.classList.add("dragged");
-		draggingBlockParent.appendChild(dragElem); // to get it to the front
+		draggingBlockParent.appendChild(dragElem);
+		blockElems.push(blockElems.splice(blockElems.indexOf(dragElem), 1)[0]);
+		updateBlockZIndices();
 	});
 	
-	return elem;
+	blockElems.push(wrapper);
+	
+	return wrapper;
 }
 
 function makeBlockItem(item) {

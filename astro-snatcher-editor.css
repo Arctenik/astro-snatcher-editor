@@ -87,14 +87,24 @@ html, body {
 }
 
 
-.block {
+.blockWrapper {
 	position: absolute;
+	width: -moz-fit-content;
+	height: -moz-fit-content;
+	width: fit-content;
+	height: fit-content;
+}
+
+.blockWrapper.dragged {
+	filter: drop-shadow(0.2em 0.2em 0.1em rgba(0, 0, 0, 0.25));
+}
+
+.block {
 	font-size: 0.8em;
 	color: white;
 	font-weight: bold;
 	width: -moz-max-content;
 	width: max-content;
-	padding-right: 1em; /* not the exact value necessary >.> */
 }
 
 .block .block {
@@ -105,12 +115,13 @@ html, body {
 	padding-top: 0.84em;
 }
 
-.block.dragged {
-	filter: drop-shadow(0.2em 0.2em 0.1em rgba(0, 0, 0, 0.25));
+.hasToothSlot > .block {
+	padding-top: 0.24em;
 }
 
 .blockHat {
 	position: relative;
+	z-index: 1;
 	top: 0.16em;
 }
 
@@ -138,9 +149,128 @@ html, body {
 	transform-origin: left bottom;
 }
 
-.blockPiece {
+.blockTooth {
+	display: none;
+	position: absolute;
+	width: 0.9em;
+	height: 0.4em;
+	bottom: -0.4em;
+	left: 0.7em;
+}
+
+.hasTooth > .block > .blockPiece > .blockTooth {
+	display: block;
+}
+
+.blockTooth.blockCTooth {
+	display: block;
+	z-index: 2;
+	left: 1.36em;
+}
+
+.blockToothBorder {
+	position: absolute;
+	top: 0;
+	left: 0;
+	border: 0.4em solid transparent;
+	border-top-color: #ba8c16;
+	width: 0.6em;
+	height: 0;
+}
+
+/* .16sqrt(2) = ~.226 */
+.blockToothInner {
+	position: absolute;
+	top: 0;
+	left: 0.226em;
+	border: 0.24em solid transparent;
+	border-top-color: #e1a91a;
+	width: 0.468em;
+	height: 0;
+}
+
+.blockToothSlot {
+	display: none;
+	position: absolute;
+	left: -0.16em;
+	top: -0.4em;
+	width: calc(100% + 0.32em);
+	height: 0.4em;
+}
+
+.hasToothSlot > .block > .blockPiece > .blockToothSlot {
 	display: flex;
-	align-items: center;
+}
+
+.blockToothSlotEdgeLeft {
+	background: #e1a91a;
+	border: 0.16em solid #ba8c16;
+	width: 0.86em;
+	border-bottom: none;
+	border-right: none;
+	border-top-left-radius: 0.3em;
+}
+
+.blockToothSlotSlopeLeft {
+	position: relative;
+	width: 0.4em;
+	height: 0.4em;
+}
+
+.blockToothSlotSlopeLeftBorder {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	border: 0.2em solid transparent;
+	border-left-color: #ba8c16;
+	border-bottom-color: #ba8c16;
+}
+
+.blockToothSlotSlopeLeftInner {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	border: 0.087em solid transparent;
+	border-left-color: #e1a91a;
+	border-bottom-color: #e1a91a;
+}
+
+.blockToothSlotSlopeRight {
+	position: relative;
+	width: 0.4em;
+	height: 0.4em;
+	margin-left: 0.28em;
+}
+
+.blockToothSlotSlopeRightBorder {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	border: 0.2em solid transparent;
+	border-right-color: #ba8c16;
+	border-bottom-color: #ba8c16;
+}
+
+.blockToothSlotSlopeRightInner {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	border: 0.087em solid transparent;
+	border-right-color: #e1a91a;
+	border-bottom-color: #e1a91a;
+}
+
+.blockToothSlotEdgeRight {
+	background: #e1a91a;
+	border: 0.16em solid #ba8c16;
+	flex: 1;
+	border-bottom: none;
+	border-left: none;
+	border-top-right-radius: 0.3em;
+}
+
+.blockPiece {
+	position: relative;
 	background: #e1a91a;
 	border: 0.16em solid #ba8c16;
 	border-top-right-radius: 0.3em;
@@ -169,17 +299,30 @@ html, body {
 	border-bottom-left-radius: 1em;
 }
 
-.blockPiece > * {
+.hasToothSlot > .block > .blockPiece:first-child {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	padding-top: 0;
+}
+
+.blockPieceItems {
+	display: flex;
+	align-items: center;
+}
+
+.blockPieceItems > * {
 	margin-left: 0.5em;
 }
 
-.blockPiece > *:first-child {
+.blockPieceItems > *:first-child {
 	margin-left: 0;
 }
 
 .blockC {
 	position: relative;
+	z-index: 1;
 	min-height: 1em;
+	width: 0;
 }
 
 .blockCAbove {
