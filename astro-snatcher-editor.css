@@ -88,7 +88,8 @@ html, body {
 	color: white;
 	font-weight: bold;
 	font-size: 0.8em;
-	width: fit-content;
+	width: -moz-max-content;
+	width: max-content;
 	padding-right: 1em; /* not the exact value necessary >.> */
 }
 
