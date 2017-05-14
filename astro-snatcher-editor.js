@@ -40,6 +40,88 @@ function updateCanvasSize() {
 
 
 
+function Block(props) {
+	Object.assign(this, props);
+	this.children = {};
+}
+
+Block.prototype = {
+	getDropBoxes() {
+		return [{
+			box: this.bottomStackBox.getBoundingClientRect(),
+			block: this,
+			type: "stacked"
+		}];
+	},
+	getDropTarget() {
+		var thisBox = this.topStackBox.getBoundingClientRect();
+		for (let block of scriptBlocks) {
+			if (block !== this) {
+				let boxes = block.getDropBoxes();
+				for (let box of boxes) {
+					if (rectsCollide(thisBox, box.box)) {
+						return box;
+					}
+				}
+			}
+		}
+	},
+	delete() {
+		for (let type in this.children) {
+			let block = this.children[type];
+			if (block) block.delete();
+		}
+		scriptBlocks.splice(scriptBlocks.indexOf(this), 1);
+		var rootIdx = scriptRoots.indexOf(this);
+		if (rootIdx !== -1) scriptRoots.splice(rootIdx, 1);
+		this.wrapper.remove();
+	},
+	detach() {
+		if (this.parent) {
+			this.parent.removeChild(this);
+			this.parent = false;
+		}
+	},
+	removeChild(type) {
+		if (typeof type !== "string") type = this.getChildType(type);
+		this.children[type] = false;
+	},
+	getChildType(child) {
+		for (let type in this.children) {
+			if (this.children[type] === child) return type;
+		}
+	},
+	drop(target) {
+		this.wrapper.style.removeProperty("left");
+		this.wrapper.style.removeProperty("top");
+		scriptRoots.splice(scriptRoots.indexOf(this), 1);
+		this.parent = target.block;
+		target.block.addChild(this, target.type);
+	},
+	addChild(block, type) {
+		if (type === "stacked") {
+			if (this.children.stacked) {
+				let oldStacked = this.children.stacked;
+				this.removeChild("stacked");
+				block.stackAtBottom(oldStacked);
+			}
+			this.children.stacked = block;
+			this.wrapper.appendChild(block.wrapper);
+		}
+	},
+	stackAtBottom(block) {
+		if (this.children.stacked)
+			this.children.stacked.stackAtBottom(block);
+		else this.addChild(block, "stacked");
+	}
+}
+
+
+function rectsCollide(a, b) {
+	return a.right >= b.left && b.right >= a.left && a.bottom >= b.top && b.bottom >= a.top;
+}
+
+
 var paletteBlocks = [
 	{
 		items: [
@@ -129,11 +211,12 @@ var paletteBlocks = [
 ];
 
 
-var blockElems = [];
+var scriptBlocks = [],
+	scriptRoots = [];
 
 function updateBlockZIndices() {
-	blockElems.forEach((elem, i) => {
-		elem.style.zIndex = i;
+	scriptRoots.forEach(({wrapper}, i) => {
+		wrapper.style.zIndex = i + 1;
 	});
 }
 
@@ -144,7 +227,7 @@ function updateBlockZIndices() {
 		nextEmX = spacing;
 	
 	paletteBlocks.forEach(blockDef => {
-		var block = makeBlock(blockDef, true);
+		var block = makeBlock(blockDef, true).wrapper;
 		block.style.left = `calc(${Math.round(nextPxX)}px + ${nextEmX}em)`;
 		block.style.top = spacing + "em";
 		palettePanel.appendChild(block);
@@ -157,49 +240,59 @@ function updateBlockZIndices() {
 
 document.addEventListener("mousemove", e => {
 	if (draggingBlock) {
+		let draggingElem = draggingBlock.wrapper;
 		e.preventDefault();
-		updatePosition();
+		updatePosition(draggingElem);
 		let {left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect(),
-			{left: blockLeft, top: blockTop} = draggingBlock.getBoundingClientRect();
+			{left: blockLeft, top: blockTop} = draggingElem.getBoundingClientRect();
 		if (blockLeft < panelLeft || blockTop < panelTop) {
 			if (draggingBlockParent === scriptPanel) {
 				draggingBlockParent = document.body;
-				draggingBlockParent.appendChild(draggingBlock);
-				updatePosition();
+				draggingBlockParent.appendChild(draggingElem);
+				updatePosition(draggingElem);
 			}
 		} else {
 			if (draggingBlockParent !== scriptPanel) {
 				draggingBlockParent = scriptPanel;
-				draggingBlockParent.appendChild(draggingBlock);
-				updatePosition();
+				draggingBlockParent.appendChild(draggingElem);
+				updatePosition(draggingElem);
 			}
+		}
+		
+		if (draggingBlock.getDropTarget()) {
+			// <some sort of visual feedback>
 		}
 	}
 	
-	function updatePosition() {
+	function updatePosition(draggingElem) {
 		let {left: parentLeft, top: parentTop} = draggingBlockParent.getBoundingClientRect();
-		draggingBlock.style.left = (e.pageX - parentLeft + draggingBlockX) + "px";
-		draggingBlock.style.top = (e.pageY - parentTop + draggingBlockY) + "px";
+		draggingElem.style.left = (e.pageX - parentLeft + draggingBlockX) + "px";
+		draggingElem.style.top = (e.pageY - parentTop + draggingBlockY) + "px";
 	}
 });
 	
 document.addEventListener("mouseup", e => {
 	if (draggingBlock) {
-		let {left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect();
+		let draggingElem = draggingBlock.wrapper,
+			{left: panelLeft, top: panelTop} = scriptPanel.getBoundingClientRect();
 		if (e.clientX < panelLeft || e.clientY < panelTop) {
-			blockElems.splice(blockElems.indexOf(draggingBlock), 1);
-			draggingBlock.remove();
+			draggingBlock.delete();
 			draggingBlock = false;
 		} else {
-			let {left: blockLeft, top: blockTop} = draggingBlock.getBoundingClientRect();
-			if (blockLeft < panelLeft || blockTop < panelTop) {
-				scriptPanel.appendChild(draggingBlock);
-				if (blockLeft < panelLeft) draggingBlock.style.left = "0";
-				else draggingBlock.style.left = (blockLeft - panelLeft) + "px";
-				if (blockTop < panelTop) draggingBlock.style.top = "0";
-				else draggingBlock.style.top = (blockTop - panelTop) + "px";
+			let dropTarget = draggingBlock.getDropTarget();
+			if (dropTarget) {
+				draggingBlock.drop(dropTarget);
+			} else {
+				let {left: blockLeft, top: blockTop} = draggingElem.getBoundingClientRect();
+				if (blockLeft < panelLeft || blockTop < panelTop) {
+					scriptPanel.appendChild(draggingElem);
+					if (blockLeft < panelLeft) draggingElem.style.left = "0";
+					else draggingElem.style.left = (blockLeft - panelLeft) + "px";
+					if (blockTop < panelTop) draggingElem.style.top = "0";
+					else draggingElem.style.top = (blockTop - panelTop) + "px";
+				}
 			}
-			draggingBlock.classList.remove("dragged");
+			draggingElem.classList.remove("dragged");
 			draggingBlock = false;
 		}
 	}
@@ -210,13 +303,25 @@ function makeBlock(info, inPalette) {
 	var {items, shape = "stack"} = info,
 		wrapper = document.createElement("div"),
 		elem = document.createElement("div"),
+		blockAbove = document.createElement("div"),
+		topStackBox = document.createElement("div"),
+		blockBelow = document.createElement("div"),
+		bottomStackBox = document.createElement("div"),
 		firstPiece,
 		currentPiece, currentPieceItems;
 		
 	wrapper.classList.add("blockWrapper");
 	elem.classList.add("block");
+	blockAbove.classList.add("blockAbove");
+	topStackBox.classList.add("blockTopStackBox");
+	blockBelow.classList.add("blockBelow");
+	bottomStackBox.classList.add("blockBottomStackBox");
 	
+	blockAbove.appendChild(topStackBox);
+	wrapper.appendChild(blockAbove);
 	wrapper.appendChild(elem);
+	blockBelow.appendChild(bottomStackBox);
+	wrapper.appendChild(blockBelow);
 	
 	if (shape === "hat") {
 		let hatElem = document.createElement("div"),
@@ -332,28 +437,39 @@ function makeBlock(info, inPalette) {
 	}
 	
 	
+	var blockObj = new Block({wrapper, elem, bottomStackBox, topStackBox});
+	
+	
 	wrapper.addEventListener("mousedown", e => {
 		e.stopPropagation();
-		var dragElem;
+		var dragObj;
 		if (inPalette) {
-			dragElem = makeBlock(info);
+			dragObj = makeBlock(info);
 			draggingBlockParent = document.body;
 		} else {
-			dragElem = wrapper;
-			draggingBlockParent = wrapper.parentElement;
+			dragObj = blockObj;
+			draggingBlockParent = wrapper.parentElement === document.body ? document.body : scriptPanel;
 		}
-		draggingBlock = dragElem;
+		var dragElem = dragObj.wrapper;
+		draggingBlock = dragObj;
 		draggingBlockX = -e.offsetX;
 		draggingBlockY = -e.offsetY;
 		dragElem.classList.add("dragged");
 		draggingBlockParent.appendChild(dragElem);
-		blockElems.push(blockElems.splice(blockElems.indexOf(dragElem), 1)[0]);
+		var idx = scriptRoots.indexOf(dragObj);
+		if (idx === -1) dragObj.detach();
+		else scriptRoots.splice(idx, 1);
+		scriptRoots.push(dragObj);
 		updateBlockZIndices();
 	});
 	
-	blockElems.push(wrapper);
+	if (inPalette) wrapper.style.zIndex = 0;
+	else {
+		scriptBlocks.push(blockObj);
+		scriptRoots.push(blockObj);
+	}
 	
-	return wrapper;
+	return blockObj;
 }
 
 function makeBlockItem(item) {
