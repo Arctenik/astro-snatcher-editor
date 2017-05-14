@@ -88,6 +88,7 @@ html, body {
 
 
 .blockWrapper {
+	font-size: 0.8em;
 	position: absolute;
 	width: -moz-fit-content;
 	height: -moz-fit-content;
@@ -95,20 +96,28 @@ html, body {
 	height: fit-content;
 }
 
+.blockWrapper .blockWrapper {
+	font-size: inherit;
+}
+
 .blockWrapper.dragged {
 	filter: drop-shadow(0.2em 0.2em 0.1em rgba(0, 0, 0, 0.25));
 }
 
+.blockWrapper > .blockWrapper {
+	position: static;
+}
+
+.blockC > .blockWrapper {
+	position: relative;
+	left: 0.66em;
+}
+
 .block {
-	font-size: 0.8em;
 	color: white;
 	font-weight: bold;
 	width: -moz-max-content;
 	width: max-content;
-}
-
-.block .block {
-	font-size: inherit;
 }
 
 .block.hasHat {
@@ -273,11 +282,19 @@ html, body {
 	position: relative;
 }
 
+.blockCStackBox {
+	position: absolute;
+	bottom: -0.9em;
+	width: 4em;
+	height: 1.5em;
+	background: rgba(0, 0, 0, 0.2);
+}
+
 .blockTopStackBox, .blockBottomStackBox {
 	position: absolute;
-	top: -0.5em;
-	width: 3em;
-	height: 1em;
+	top: -0.75em;
+	width: 4em;
+	height: 1.5em;
 	background: rgba(0, 0, 0, 0.2);
 }
 

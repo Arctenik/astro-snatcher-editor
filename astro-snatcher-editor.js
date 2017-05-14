@@ -47,11 +47,19 @@ function Block(props) {
 
 Block.prototype = {
 	getDropBoxes() {
-		return [{
-			box: this.bottomStackBox.getBoundingClientRect(),
-			block: this,
-			type: "stacked"
-		}];
+		return [
+			...this.cStackBoxes.map((cBox, i) => ({
+				box: cBox.getBoundingClientRect(),
+				block: this,
+				type: "cSlot",
+				index: i
+			})),
+			{
+				box: this.bottomStackBox.getBoundingClientRect(),
+				block: this,
+				type: "stacked"
+			}
+		];
 	},
 	getDropTarget() {
 		var thisBox = this.topStackBox.getBoundingClientRect();
@@ -96,9 +104,9 @@ Block.prototype = {
 		this.wrapper.style.removeProperty("top");
 		scriptRoots.splice(scriptRoots.indexOf(this), 1);
 		this.parent = target.block;
-		target.block.addChild(this, target.type);
+		target.block.addChild(this, target);
 	},
-	addChild(block, type) {
+	addChild(block, {type, index}) {
 		if (type === "stacked") {
 			if (this.children.stacked) {
 				let oldStacked = this.children.stacked;
@@ -107,12 +115,21 @@ Block.prototype = {
 			}
 			this.children.stacked = block;
 			this.wrapper.appendChild(block.wrapper);
+		} else if (type === "cSlot") {
+			type += index;
+			if (this.children[type]) {
+				let oldStacked = this.children[type];
+				this.removeChild(type);
+				block.stackAtBottom(oldStacked);
+			}
+			this.children[type] = block;
+			this.cElems[index].appendChild(block.wrapper);
 		}
 	},
 	stackAtBottom(block) {
 		if (this.children.stacked)
 			this.children.stacked.stackAtBottom(block);
-		else this.addChild(block, "stacked");
+		else this.addChild(block, {type: "stacked"});
 	}
 }
 
@@ -307,6 +324,7 @@ function makeBlock(info, inPalette) {
 		topStackBox = document.createElement("div"),
 		blockBelow = document.createElement("div"),
 		bottomStackBox = document.createElement("div"),
+		cStackBoxes = [], cElems = [],
 		firstPiece,
 		currentPiece, currentPieceItems;
 		
@@ -343,9 +361,13 @@ function makeBlock(info, inPalette) {
 	
 	items.forEach(item => {
 		if (item.type === "c") {
-			let cTooth = makeTooth();
+			let cTooth = makeTooth(),
+				cStackBox = document.createElement("div");
 			cTooth.classList.add("blockCTooth");
+			cStackBox.classList.add("blockCStackBox");
 			currentPiece.appendChild(cTooth);
+			currentPiece.appendChild(cStackBox);
+			cStackBoxes.push(cStackBox);
 			currentPiece = false;
 			let cElem = document.createElement("div"),
 				cAbove = document.createElement("div"),
@@ -364,6 +386,8 @@ function makeBlock(info, inPalette) {
 			cElem.appendChild(cBelow);
 			cElem.appendChild(cSpace);
 			elem.appendChild(cElem);
+			
+			cElems.push(cElem);
 			
 			newPiece();
 		} else {
@@ -437,7 +461,11 @@ function makeBlock(info, inPalette) {
 	}
 	
 	
-	var blockObj = new Block({wrapper, elem, bottomStackBox, topStackBox});
+	var blockObj = new Block({
+		wrapper, elem,
+		bottomStackBox, topStackBox,
+		cStackBoxes, cElems
+	});
 	
 	
 	wrapper.addEventListener("mousedown", e => {
