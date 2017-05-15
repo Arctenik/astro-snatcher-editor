@@ -130,7 +130,7 @@ html, body {
 
 .blockHat {
 	position: relative;
-	z-index: 1;
+	z-index: 3;
 	top: 0.16em;
 }
 
@@ -287,7 +287,7 @@ html, body {
 	bottom: -0.9em;
 	width: 4em;
 	height: 1.5em;
-	background: rgba(0, 0, 0, 0.2);
+	/*background: rgba(0, 0, 0, 0.2);*/
 }
 
 .blockTopStackBox, .blockBottomStackBox {
@@ -295,7 +295,7 @@ html, body {
 	top: -0.75em;
 	width: 4em;
 	height: 1.5em;
-	background: rgba(0, 0, 0, 0.2);
+	/*background: rgba(0, 0, 0, 0.2);*/
 }
 
 .blockPiece {
@@ -328,6 +328,11 @@ html, body {
 	border-bottom-left-radius: 1em;
 }
 
+.blockPiece.bottomIsDropTarget {
+	z-index: 2;
+	filter: drop-shadow(0 0.4em 0 white);
+}
+
 .hasToothSlot > .block > .blockPiece:first-child {
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
@@ -349,7 +354,7 @@ html, body {
 
 .blockC {
 	position: relative;
-	z-index: 1;
+	z-index: 3;
 	min-height: 1em;
 	width: 0;
 }

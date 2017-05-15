@@ -14,7 +14,8 @@ var currentTab = 0,
 	draggingBlock = false,
 	draggingBlockX,
 	draggingBlockY,
-	draggingBlockParent;
+	draggingBlockParent,
+	currentDropTarget;
 
 
 
@@ -62,16 +63,35 @@ Block.prototype = {
 		];
 	},
 	getDropTarget() {
-		var thisBox = this.topStackBox.getBoundingClientRect();
+		var thisBox = this.topStackBox.getBoundingClientRect(),
+			result;
 		for (let block of scriptBlocks) {
 			if (block !== this) {
 				let boxes = block.getDropBoxes();
 				for (let box of boxes) {
 					if (rectsCollide(thisBox, box.box)) {
-						return box;
+						if (result) {
+							if (overlapArea(thisBox, box.box) > overlapArea(thisBox, result.box))
+								result = box;
+						} else result = box;
 					}
 				}
 			}
+		}
+		return result;
+	},
+	highlightDropTarget({type, index}) {
+		if (type === "stacked") {
+			this.bottomPiece.classList.add("bottomIsDropTarget");
+		} else if (type === "cSlot") {
+			this.preCPieces[index].classList.add("bottomIsDropTarget");
+		}
+	},
+	dehighlightDropTarget({type, index}) {
+		if (type === "stacked") {
+			this.bottomPiece.classList.remove("bottomIsDropTarget");
+		} else if (type === "cSlot") {
+			this.preCPieces[index].classList.remove("bottomIsDropTarget");
 		}
 	},
 	delete() {
@@ -136,6 +156,15 @@ Block.prototype = {
 
 function rectsCollide(a, b) {
 	return a.right >= b.left && b.right >= a.left && a.bottom >= b.top && b.bottom >= a.top;
+}
+
+function overlapArea(rect1, rect2) {
+	return overlapLength(rect1.left, rect1.right, rect2.left, rect2.right) * overlapLength(rect1.top, rect1.bottom, rect2.top, rect2.bottom);
+}
+
+function overlapLength(...nums) {
+	nums.sort((a, b) => a - b);
+	return nums[2] - nums[1];
 }
 
 
@@ -276,8 +305,15 @@ document.addEventListener("mousemove", e => {
 			}
 		}
 		
-		if (draggingBlock.getDropTarget()) {
-			// <some sort of visual feedback>
+		var foundDropTarget = draggingBlock.getDropTarget();
+		if (foundDropTarget !== currentDropTarget) {
+			if (currentDropTarget) {
+				currentDropTarget.block.dehighlightDropTarget(currentDropTarget);
+			}
+			currentDropTarget = foundDropTarget;
+			if (currentDropTarget) {
+				currentDropTarget.block.highlightDropTarget(currentDropTarget);
+			}
 		}
 	}
 	
@@ -298,6 +334,7 @@ document.addEventListener("mouseup", e => {
 		} else {
 			let dropTarget = draggingBlock.getDropTarget();
 			if (dropTarget) {
+				if (currentDropTarget) currentDropTarget.block.dehighlightDropTarget(currentDropTarget);
 				draggingBlock.drop(dropTarget);
 			} else {
 				let {left: blockLeft, top: blockTop} = draggingElem.getBoundingClientRect();
@@ -324,7 +361,7 @@ function makeBlock(info, inPalette) {
 		topStackBox = document.createElement("div"),
 		blockBelow = document.createElement("div"),
 		bottomStackBox = document.createElement("div"),
-		cStackBoxes = [], cElems = [],
+		cStackBoxes = [], cElems = [], preCPieces = [],
 		firstPiece,
 		currentPiece, currentPieceItems;
 		
@@ -368,6 +405,7 @@ function makeBlock(info, inPalette) {
 			currentPiece.appendChild(cTooth);
 			currentPiece.appendChild(cStackBox);
 			cStackBoxes.push(cStackBox);
+			preCPieces.push(currentPiece);
 			currentPiece = false;
 			let cElem = document.createElement("div"),
 				cAbove = document.createElement("div"),
@@ -464,7 +502,8 @@ function makeBlock(info, inPalette) {
 	var blockObj = new Block({
 		wrapper, elem,
 		bottomStackBox, topStackBox,
-		cStackBoxes, cElems
+		bottomPiece: currentPiece,
+		cStackBoxes, cElems, preCPieces
 	});
 	
 	
