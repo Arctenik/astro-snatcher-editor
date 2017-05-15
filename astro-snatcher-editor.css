@@ -333,6 +333,11 @@ html, body {
 	filter: drop-shadow(0 0.4em 0 white);
 }
 
+.blockPiece.topIsDropTarget {
+	z-index: 2;
+	filter: drop-shadow(0 -0.4em 0 white);
+}
+
 .hasToothSlot > .block > .blockPiece:first-child {
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
@@ -419,4 +424,9 @@ html, body {
 
 .blockNumber {
 	border-radius: 1em;
+}
+
+.blockText.isDropTarget, .blockNumber.isDropTarget {
+	z-index: 1;
+	box-shadow: 0 0 0.2em 0.2em white;
 }

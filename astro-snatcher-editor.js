@@ -84,14 +84,24 @@ Block.prototype = {
 		if (type === "stacked") {
 			this.bottomPiece.classList.add("bottomIsDropTarget");
 		} else if (type === "cSlot") {
-			this.preCPieces[index].classList.add("bottomIsDropTarget");
+			type += index;
+			if (this.children[type]) {
+				this.children[type].topPiece.classList.add("topIsDropTarget");
+			} else {
+				this.preCPieces[index].classList.add("bottomIsDropTarget");
+			}
 		}
 	},
 	dehighlightDropTarget({type, index}) {
 		if (type === "stacked") {
 			this.bottomPiece.classList.remove("bottomIsDropTarget");
 		} else if (type === "cSlot") {
-			this.preCPieces[index].classList.remove("bottomIsDropTarget");
+			type += index;
+			if (this.children[type]) {
+				this.children[type].topPiece.classList.remove("topIsDropTarget");
+			} else {
+				this.preCPieces[index].classList.remove("bottomIsDropTarget");
+			}
 		}
 	},
 	delete() {
@@ -502,6 +512,7 @@ function makeBlock(info, inPalette) {
 	var blockObj = new Block({
 		wrapper, elem,
 		bottomStackBox, topStackBox,
+		topPiece: firstPiece,
 		bottomPiece: currentPiece,
 		cStackBoxes, cElems, preCPieces
 	});
