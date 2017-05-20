@@ -1,1 +1,1 @@
-A graphical editor for [Astro Snatcher](https://github.com/Zatnik/astro-snatcher) files
+Originally intended to be a graphical editor for [Astro Snatcher](https://github.com/Zatnik/astro-snatcher) files; mainly consists of some styling and basic functionality for Scratch-like blocks.
